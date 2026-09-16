@@ -1,0 +1,259 @@
+import React, { useState, useMemo } from 'react';
+import { Navbar } from './components/Navbar';
+import { Hero } from './components/Hero';
+import { FeaturedSection } from './components/FeaturedSection';
+import { CategoryFilter } from './components/CategoryFilter';
+import { BouquetGrid } from './components/BouquetGrid';
+import { CartDrawer } from './components/CartDrawer';
+import { AboutSection } from './components/AboutSection';
+import { Newsletter } from './components/Newsletter';
+import { Footer } from './components/Footer';
+import { QuickViewModal } from './components/QuickViewModal';
+import { CheckoutModal } from './components/CheckoutModal';
+import { StoryModal } from './components/StoryModal';
+
+import { BOUQUETS_DATA, CATEGORIES, OCCASIONS, REVIEWS } from './data/bouquets';
+import { Sparkles, Heart, CheckCircle2 } from 'lucide-react';
+
+export function App() {
+  // Products & Filtering state
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  
+  // Cart state
+  const [cartItems, setCartItems] = useState([
+    // initial sample item so cart is ready to preview
+    {
+      ...BOUQUETS_DATA[0],
+      quantity: 1
+    }
+  ]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Wishlist state
+  const [wishlist, setWishlist] = useState([BOUQUETS_DATA[3].id]); // sample wishlist item
+
+  // Modals state
+  const [quickViewBouquet, setQuickViewBouquet] = useState(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isStoryOpen, setIsStoryOpen] = useState(false);
+
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  };
+
+  // Filtered bouquets
+  const filteredBouquets = useMemo(() => {
+    if (selectedCategory === 'All') return BOUQUETS_DATA;
+    return BOUQUETS_DATA.filter(item => item.category.toLowerCase() === selectedCategory.toLowerCase());
+  }, [selectedCategory]);
+
+  // Cart operations
+  const handleAddToCart = (bouquet) => {
+    setCartItems((prevItems) => {
+      const existing = prevItems.find(item => item.id === bouquet.id);
+      if (existing) {
+        return prevItems.map(item =>
+          item.id === bouquet.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prevItems, { ...bouquet, quantity: 1 }];
+    });
+
+    showToast(`Added "${bouquet.name}" to Bloom Bag 🌸`);
+  };
+
+  const handleUpdateQty = (id, delta) => {
+    setCartItems((prevItems) => {
+      return prevItems
+        .map(item => {
+          if (item.id === id) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean);
+    });
+  };
+
+  const handleRemoveItem = (id) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+    showToast('Removed item from bag');
+  };
+
+  const handleToggleWishlist = (bouquet) => {
+    if (wishlist.includes(bouquet.id)) {
+      setWishlist(prev => prev.filter(id => id !== bouquet.id));
+      showToast(`Removed "${bouquet.name}" from Wishlist`);
+    } else {
+      setWishlist(prev => [...prev, bouquet.id]);
+      showToast(`Saved "${bouquet.name}" to your Wishlist ❤️`);
+    }
+  };
+
+  const handleCompleteOrder = () => {
+    setCartItems([]);
+  };
+
+  const cartTotalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  return (
+    <div className="app-container">
+      {/* 1. Sticky Navigation */}
+      <Navbar
+        cartCount={cartTotalCount}
+        wishlistCount={wishlist.length}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenWishlist={() => {
+          setSelectedCategory('All');
+          const element = document.getElementById('bouquets');
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+          showToast(`You have ${wishlist.length} bouquet(s) in wishlist ❤️`);
+        }}
+      />
+
+      {/* 2. Hero Section */}
+      <Hero />
+
+      {/* 3. Featured Editorial Section */}
+      <FeaturedSection onOpenStoryModal={() => setIsStoryOpen(true)} />
+
+      {/* 4. Occasions Banner Section */}
+      <section className="occasions-section">
+        <div className="container">
+          <div className="section-header" style={{ marginBottom: '36px' }}>
+            <span className="section-label">Moments to Celebrate</span>
+            <h2 className="section-title" style={{ fontSize: '2.2rem' }}>Every Moment Deserves Blooms</h2>
+          </div>
+          <div className="occasions-grid">
+            {OCCASIONS.map((occ, idx) => (
+              <div key={idx} className="occasion-card">
+                <span className="occasion-emoji">{occ.icon}</span>
+                <h4 className="occasion-title">{occ.name}</h4>
+                <p className="occasion-desc">{occ.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Main Bouquet Collection & Filter */}
+      <section id="bouquets" className="collection-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-label">Artisanal Selection</span>
+            <h2 className="section-title">Find Your Perfect Bouquet</h2>
+            <p className="section-subtitle">
+              Made for birthdays, celebrations, apologies, anniversaries, and everything in between.
+            </p>
+          </div>
+
+          <CategoryFilter
+            categories={CATEGORIES}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+
+          <BouquetGrid
+            bouquets={filteredBouquets}
+            onAddToCart={handleAddToCart}
+            onToggleWishlist={handleToggleWishlist}
+            wishlistIds={wishlist}
+            onQuickView={(b) => setQuickViewBouquet(b)}
+          />
+        </div>
+      </section>
+
+      {/* 6. About Section */}
+      <AboutSection />
+
+      {/* 7. Reviews & Love Section */}
+      <section className="reviews-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-label">Patron Testimonials</span>
+            <h2 className="section-title">Words from Our Floral Lovers</h2>
+            <p className="section-subtitle">
+              Discover why thousands choose BLOOMÉ for their most precious occasions.
+            </p>
+          </div>
+
+          <div className="reviews-grid">
+            {REVIEWS.map((rev, index) => (
+              <div key={index} className="review-card">
+                <div>
+                  <div className="review-stars">
+                    {'★'.repeat(rev.rating)}
+                  </div>
+                  <p className="review-text">"{rev.text}"</p>
+                </div>
+                <div className="review-author">
+                  <div>
+                    <h5 className="author-name">{rev.name}</h5>
+                    <span className="author-location">{rev.city}</span>
+                  </div>
+                  <span className="review-bouquet-tag">{rev.bouquet}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Newsletter Section */}
+      <Newsletter />
+
+      {/* 9. Contact / Footer */}
+      <Footer />
+
+      {/* Modals & Drawers */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          setIsCheckoutOpen(true);
+        }}
+      />
+
+      <QuickViewModal
+        bouquet={quickViewBouquet}
+        onClose={() => setQuickViewBouquet(null)}
+        onAddToCart={handleAddToCart}
+        onToggleWishlist={handleToggleWishlist}
+        isWishlisted={quickViewBouquet ? wishlist.includes(quickViewBouquet.id) : false}
+      />
+
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        cartItems={cartItems}
+        onCompleteOrder={handleCompleteOrder}
+      />
+
+      <StoryModal
+        isOpen={isStoryOpen}
+        onClose={() => setIsStoryOpen(false)}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="toast-notification">
+          <Sparkles size={18} color="#F7E4E6" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
