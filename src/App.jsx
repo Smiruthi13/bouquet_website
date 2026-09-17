@@ -12,9 +12,11 @@ import { QuickViewModal } from './components/QuickViewModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { StoryModal } from './components/StoryModal';
 import { AdminPanel } from './components/AdminPanel';
+import { AuthModal } from './components/AuthModal';
 
 import { BOUQUETS_DATA, CATEGORIES, OCCASIONS, REVIEWS } from './data/bouquets';
 import { Sparkles, Shield } from 'lucide-react';
+import { supabase } from './supabaseClient';
 
 export function App() {
   // Products & Filtering state
@@ -32,6 +34,11 @@ export function App() {
   // Wishlist state
   const [wishlist, setWishlist] = useState([BOUQUETS_DATA[3].id]);
 
+  // Auth state
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
+
   // Modals state
   const [quickViewBouquet, setQuickViewBouquet] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -40,6 +47,19 @@ export function App() {
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Monitor Supabase auth state
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // F2 Shortcut key listener for Admin Panel
   useEffect(() => {
@@ -59,6 +79,12 @@ export function App() {
     setTimeout(() => {
       setToastMessage(null);
     }, 3000);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setCurrentUser(null);
+    showToast('Signed out successfully');
   };
 
   // Filtered bouquets
@@ -123,6 +149,12 @@ export function App() {
       <Navbar
         cartCount={cartTotalCount}
         wishlistCount={wishlist.length}
+        currentUser={currentUser}
+        onOpenAuth={() => {
+          setAuthMode('signin');
+          setIsAuthOpen(true);
+        }}
+        onSignOut={handleSignOut}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => {
           setSelectedCategory('All');
@@ -226,7 +258,7 @@ export function App() {
       {/* 9. Contact / Footer */}
       <Footer />
 
-      {/* Floating Admin Button helper for convenience (also toggled via F2) */}
+      {/* Floating Admin Button helper */}
       <button 
         onClick={() => setIsAdminOpen(true)}
         className="admin-floating-btn"
@@ -255,6 +287,17 @@ export function App() {
         <span>Admin (F2)</span>
       </button>
 
+      {/* Authentication Modal (Sign In / Sign Up / Google Auth) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        initialMode={authMode}
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+          showToast(`Welcome, ${user.user_metadata?.full_name || user.email}! 🌸`);
+        }}
+      />
+
       {/* Modals & Drawers */}
       <CartDrawer
         isOpen={isCartOpen}
@@ -280,6 +323,7 @@ export function App() {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         cartItems={cartItems}
+        currentUser={currentUser}
         onCompleteOrder={handleCompleteOrder}
       />
 
