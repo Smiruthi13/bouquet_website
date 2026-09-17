@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { FeaturedSection } from './components/FeaturedSection';
@@ -11,9 +11,10 @@ import { Footer } from './components/Footer';
 import { QuickViewModal } from './components/QuickViewModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { StoryModal } from './components/StoryModal';
+import { AdminPanel } from './components/AdminPanel';
 
 import { BOUQUETS_DATA, CATEGORIES, OCCASIONS, REVIEWS } from './data/bouquets';
-import { Sparkles, Heart, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Shield } from 'lucide-react';
 
 export function App() {
   // Products & Filtering state
@@ -21,7 +22,6 @@ export function App() {
   
   // Cart state
   const [cartItems, setCartItems] = useState([
-    // initial sample item so cart is ready to preview
     {
       ...BOUQUETS_DATA[0],
       quantity: 1
@@ -30,15 +30,29 @@ export function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Wishlist state
-  const [wishlist, setWishlist] = useState([BOUQUETS_DATA[3].id]); // sample wishlist item
+  const [wishlist, setWishlist] = useState([BOUQUETS_DATA[3].id]);
 
   // Modals state
   const [quickViewBouquet, setQuickViewBouquet] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isStoryOpen, setIsStoryOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState(null);
+
+  // F2 Shortcut key listener for Admin Panel
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        setIsAdminOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const showToast = (message) => {
     setToastMessage(message);
@@ -212,6 +226,35 @@ export function App() {
       {/* 9. Contact / Footer */}
       <Footer />
 
+      {/* Floating Admin Button helper for convenience (also toggled via F2) */}
+      <button 
+        onClick={() => setIsAdminOpen(true)}
+        className="admin-floating-btn"
+        title="Open Atelier Admin Portal (or press F2)"
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '24px',
+          background: 'rgba(86, 29, 43, 0.9)',
+          color: '#FAF7F2',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          padding: '8px 14px',
+          borderRadius: '50px',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+          zIndex: 90
+        }}
+      >
+        <Shield size={14} color="#F7E4E6" />
+        <span>Admin (F2)</span>
+      </button>
+
       {/* Modals & Drawers */}
       <CartDrawer
         isOpen={isCartOpen}
@@ -243,6 +286,12 @@ export function App() {
       <StoryModal
         isOpen={isStoryOpen}
         onClose={() => setIsStoryOpen(false)}
+      />
+
+      {/* Admin Panel (F2 Shortcut) */}
+      <AdminPanel
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
       />
 
       {/* Toast Notification */}
