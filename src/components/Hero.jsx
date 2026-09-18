@@ -1,7 +1,17 @@
-import React from 'react';
-import { ArrowDown, Sparkles, Flower2, Heart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowDown, Sparkles } from 'lucide-react';
 
 export const Hero = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const scrollToBouquets = (e) => {
     e.preventDefault();
     const bouquetSection = document.getElementById('bouquets');
@@ -11,77 +21,105 @@ export const Hero = () => {
   };
 
   return (
-    <header id="hero" className="hero">
-      {/* Background visual soft glowing blobs */}
-      <div className="hero-bg-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
+    <header id="hero" className="editorial-hero">
+      {/* Deep atmospheric radial glow layers */}
+      <div className="hero-dark-atmosphere">
+        <div className="dark-glow dark-glow-1"></div>
+        <div className="dark-glow dark-glow-2"></div>
+        <div className="dark-glow dark-glow-3"></div>
       </div>
 
-      {/* Floating subtle petals decorative element */}
-      <div className="hero-petals">
-        {[...Array(6)].map((_, i) => (
-          <span 
-            key={i} 
-            className="petal-item"
-            style={{
-              left: `${15 + i * 15}%`,
-              animationDuration: `${12 + i * 3}s`,
-              animationDelay: `${i * 1.8}s`,
-              fontSize: `${14 + (i % 3) * 6}px`
-            }}
-          >
-            🌸
-          </span>
-        ))}
+      {/* Dramatic Oversized Flower Visual - High Fashion Editorial Treatment */}
+      <div 
+        className="editorial-flower-container"
+        style={{
+          transform: `translate3d(0, ${scrollY * 0.18}px, 0)`
+        }}
+      >
+        <div className="editorial-flower-wrapper">
+          {/* Main Giant Flower - Pink Lotus / Peony with vivid magenta, lavender & soft peach tones */}
+          <img 
+            src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=2200&q=90"
+            alt="Dramatic cinematic pink blossom in atmospheric deep midnight"
+            className="editorial-flower-img"
+          />
+          {/* Secondary subtle ambient floral layer for depth */}
+          <div className="flower-radial-mask"></div>
+          <div className="flower-soft-glow"></div>
+        </div>
       </div>
 
-      {/* Hero content */}
-      <div className="hero-content">
-        <div className="hero-pill">
-          <Sparkles size={14} />
-          <span>Atelier de Fleurs & Botanical Art</span>
+      {/* Editorial Vignette & Translucent Dark Overlay for maximum readability */}
+      <div className="hero-cinematic-overlay"></div>
+
+      {/* Luxury Editorial Corner & Edge Elements */}
+      <div className="editorial-edge-labels">
+        <div className="edge-item edge-top-left">
+          <span className="edge-num">01 — 04</span>
+          <span className="edge-sub">ATELIER HAUTE FLORAL</span>
         </div>
 
-        <h1 className="hero-title">
-          Flowers that speak what <em>words cannot.</em>
+        <div className="edge-item edge-bottom-left">
+          <span className="edge-accent-dot"></span>
+          <span className="edge-sub">Seasonal Collection • Vol. 26</span>
+        </div>
+
+        <div className="edge-item edge-bottom-right">
+          <span className="edge-sub">Handcrafted in Bloom • Pure Botanical Art</span>
+        </div>
+
+        {/* Right side delicate floral collection marker */}
+        <div className="edge-side-indicator">
+          <div className="collection-circle-marker">
+            <span className="marker-ring"></span>
+            <span className="marker-core"></span>
+          </div>
+          <span className="side-rotated-text">BLOOMÉ CAMPAIGN</span>
+        </div>
+      </div>
+
+      {/* Central Editorial Hero Typography */}
+      <div 
+        className="editorial-hero-content"
+        style={{
+          transform: `translate3d(0, ${scrollY * -0.08}px, 0)`
+        }}
+      >
+        <div className="hero-eyebrow-wrap">
+          <span className="hero-eyebrow">ARTISTRY IN BLOOM</span>
+        </div>
+
+        <h1 className="editorial-hero-title">
+          Curated Floral<br />
+          <span className="italic-title">Masterpieces</span>
         </h1>
 
-        <p className="hero-subtitle">
-          Handcrafted bouquets made with love, for every beautiful moment.
+        <p className="editorial-hero-description">
+          Bringing the ethereal beauty of the garden into your home with seasonal, hand-crafted arrangements designed to inspire.
         </p>
 
-        <div className="hero-cta-group">
-          <a href="#bouquets" className="btn btn-primary" onClick={scrollToBouquets}>
-            <Flower2 size={18} />
-            Explore Bouquets
+        <div className="editorial-hero-cta">
+          <a 
+            href="#bouquets" 
+            className="editorial-btn-explore" 
+            onClick={scrollToBouquets}
+          >
+            <span>Explore Collection</span>
           </a>
-          <a href="#featured" className="btn btn-outline">
-            Our Philosophy
-          </a>
-        </div>
-
-        <div className="hero-stats">
-          <div className="stat-item">
-            <span className="stat-num">100%</span>
-            <span className="stat-label">Farm Fresh Blooms</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-num">Same-Day</span>
-            <span className="stat-label">Bespoke Delivery</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-num">4.9 ★</span>
-            <span className="stat-label">Loved by 10,000+</span>
-          </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <a href="#bouquets" className="hero-scroll-indicator" onClick={scrollToBouquets}>
-        <span>Scroll to bloom</span>
-        <ArrowDown size={14} />
+      {/* Bottom Scroll to Bloom Indicator */}
+      <a 
+        href="#bouquets" 
+        className="editorial-scroll-indicator" 
+        onClick={scrollToBouquets}
+        aria-label="Scroll to Bloom"
+      >
+        <span className="scroll-bloom-text">SCROLL TO BLOOM</span>
+        <div className="scroll-animated-line">
+          <div className="scroll-line-pulse"></div>
+        </div>
       </a>
     </header>
   );

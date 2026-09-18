@@ -196,7 +196,7 @@ export function App() {
             <span className="section-label">Artisanal Selection</span>
             <h2 className="section-title">Find Your Perfect Bouquet</h2>
             <p className="section-subtitle">
-              Made for birthdays, celebrations, apologies, anniversaries, and everything in between.
+              Flowers arranged for the moments that matter.
             </p>
           </div>
 
